@@ -17,7 +17,7 @@ const RouterPage = (props) => {
                 <Route path='/' exact>
                     <Home {...props} />
                 </Route>
-              <Route path='/class-page'>
+              <Route path='/classpage'>
                     <ClassesPage {...props} />
                 </Route>
             </Switch>
