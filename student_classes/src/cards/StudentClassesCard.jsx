@@ -18,7 +18,7 @@ const StudentClassesCard = () => {
 
         // Call the named query from extension.js
         const result = await getEthosQuery({queryId:"section-registrations", properties:{
-          registrantId: null, // Pass null to let Experience auto-populate the current user
+          personId: null, // Pass null to let Experience auto-populate the current user
         }});
 
         console.log(result, "resultsresultsresultsresultsresultsresultsresultsresultsresultsresultsresultsresultsresultsresultsresultsresults")
