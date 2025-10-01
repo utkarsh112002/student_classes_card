@@ -2,7 +2,9 @@ import { withStyles } from '@ellucian/react-design-system/core/styles';
 import { spacing40 } from '@ellucian/react-design-system/core/styles/tokens';
 import { Typography, TextLink } from '@ellucian/react-design-system/core';
 import PropTypes from 'prop-types';
-import React from 'react';
+// import {  useDataQuery } from '@ellucian/experience-extension-extras';
+import { useData } from "@ellucian/experience-extension-utils"
+import React, { useEffect } from 'react';
 
 const styles = () => ({
     card: {
@@ -13,9 +15,16 @@ const styles = () => ({
     }
 });
 
-const StudentClassesCard = (props) => {
+const StudentClassesCard = async (props) => {
+    const { getEthosQuery } = useData();
     const { classes } = props;
+    // const { isError, isLoading, isRefreshing } = useDataQuery(resource);
+    // const resource = 'section-registrations';
+    const result = await getEthosQuery({queryId: 'section-registrations'});
 
+    useEffect(() => {
+        console.log(result)
+    }, [result])
     return (
         <div className={classes.card}>
             <Typography variant="h2">
