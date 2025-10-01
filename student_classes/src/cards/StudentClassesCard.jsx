@@ -1,49 +1,89 @@
-import { withStyles } from '@ellucian/react-design-system/core/styles';
-import { spacing40 } from '@ellucian/react-design-system/core/styles/tokens';
-import { Typography, TextLink } from '@ellucian/react-design-system/core';
-import PropTypes from 'prop-types';
-// import {  useDataQuery } from '@ellucian/experience-extension-extras';
-import { useData } from "@ellucian/experience-extension-utils"
-import React, { useEffect } from 'react';
+// src/cards/StudentClassesCard.jsx
+import React, { useEffect, useState } from "react";
+import { useData, useUserInfo, useCardControl } from "@ellucian/experience-extension-utils";
 
-const styles = () => ({
-    card: {
-        marginTop: 0,
-        marginRight: spacing40,
-        marginBottom: 0,
-        marginLeft: spacing40
+const StudentClassesCard = () => {
+  const { getEthosQuery } = useData();
+  const { firstName } = useUserInfo();
+  const { setLoadingStatus, setErrorMessage } = useCardControl();
+
+  const [sections, setSections] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchSections() {
+      try {
+        setLoading(true);
+        setLoadingStatus(true);
+
+        // Call the named query from extension.js
+        const result = await getEthosQuery({queryId:"section-registrations", properties:{
+          registrantId: null, // Pass null to let Experience auto-populate the current user
+        }});
+
+        console.log(result, "resultsresultsresultsresultsresultsresultsresultsresultsresultsresultsresultsresultsresultsresultsresultsresults")
+        // Access the edges array in your working query
+        setSections(result?.sectionRegistration?.edges || []);
+      } catch (err) {
+        setErrorMessage({
+          headerMessage: "Error fetching student sections",
+          textMessage: err.message,
+          iconName: "error",
+          iconColor: "red",
+        });
+      } finally {
+        setLoading(false);
+        setLoadingStatus(false);
+      }
     }
-});
 
-const StudentClassesCard = async (props) => {
-    const { getEthosQuery } = useData();
-    const { classes } = props;
-    // const { isError, isLoading, isRefreshing } = useDataQuery(resource);
-    // const resource = 'section-registrations';
-    const result = await getEthosQuery({queryId: 'section-registrations'});
+    fetchSections();
+  }, [getEthosQuery, setLoadingStatus, setErrorMessage]);
 
-    useEffect(() => {
-        console.log(result)
-    }, [result])
-    return (
-        <div className={classes.card}>
-            <Typography variant="h2">
-                Hello StudentClasses World
-            </Typography>
-            <Typography>
-                <span>
-                    For sample extensions, visit the Ellucian Developer
-                </span>
-                <TextLink href="https://github.com/ellucian-developer/experience-extension-sdk-samples" target="_blank">
-                     GitHub
-                </TextLink>
-            </Typography>
-        </div>
-    );
+  if (loading) {
+    return <p>Loading your classes…</p>;
+  }
+
+  if (!sections.length) {
+    return <p>No registered sections found for today.</p>;
+  }
+
+  return (
+    <div style={{ padding: "1rem" }}>
+      <h3>Hello {firstName || "Student"} 👋</h3>
+      <p>Your registered sections:</p>
+
+      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <thead>
+          <tr>
+            <th style={{ borderBottom: "1px solid #ccc", textAlign: "left" }}>Course</th>
+            <th style={{ borderBottom: "1px solid #ccc", textAlign: "left" }}>Code</th>
+            <th style={{ borderBottom: "1px solid #ccc", textAlign: "left" }}>Number</th>
+            <th style={{ borderBottom: "1px solid #ccc", textAlign: "left" }}>Title</th>
+            <th style={{ borderBottom: "1px solid #ccc", textAlign: "left" }}>Start - End</th>
+          </tr>
+        </thead>
+        <tbody>
+          {sections.map(({ node }) => {
+            const section = node.section16 || node.section; // adjust to match your query
+            const course = section?.course16 || section?.course;
+            const title = course?.titles?.[0]?.value || section?.titles?.[0]?.value;
+            return (
+              <tr key={section?.id}>
+                <td>{course?.subject6?.abbreviation || course?.subject?.abbreviation}</td>
+                <td>{section?.code}</td>
+                <td>{section?.number}</td>
+                <td>{title}</td>
+                <td>
+                  {section?.startOn} - {section?.endOn}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
 };
 
-StudentClassesCard.propTypes = {
-    classes: PropTypes.object.isRequired
-};
-
-export default withStyles(styles)(StudentClassesCard);
+export default StudentClassesCard;
