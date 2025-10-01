@@ -59,10 +59,10 @@ module.exports = {
   },
   cards: [
     {
-      type: "StudentClassesAcademianCard",
-      source: "./src/cards/StudentClassesAcademianCard",
+      type: "StudentClassesCard",
+      source: "./src/cards/StudentClassesCard",
       title: "StudentClassesAcademian Card",
-      displayCardType: "StudentClassesAcaedemian Card",
+      displayCardType: "StudentClassesAcademian Card",
       description:
         "This is an introductory card to the Ellucian Experience SDK",
  
@@ -76,3 +76,5 @@ module.exports = {
     source: "./src/page/router.jsx",
   },
 };
+ 
+ 
