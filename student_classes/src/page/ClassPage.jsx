@@ -107,14 +107,14 @@ const ClassesPage = () => {
           ))}
         </select>
 
-        <a
+        {/* <a
           href="https://canvas.myuniversity.edu"
           target="_blank"
           rel="noopener noreferrer"
           style={{ fontSize: "0.9rem", color: "#1976d2", textDecoration: "none", alignSelf: "center" }}
         >
           Canvas →
-        </a>
+        </a> */}
       </div>
 
       {/* Course list */}

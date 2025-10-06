@@ -5,7 +5,7 @@ import {
     Switch,
     Route
 } from 'react-router-dom';
-import Home from './Home';
+// import Home from './Home';
 import ClassesPage from './ClassPage';
 
 // for more information on react router: https://v5.reactrouter.com/web/guides/quick-start
@@ -14,9 +14,9 @@ const RouterPage = (props) => {
     return (
         <Router basename={props.pageInfo.basePath}>
             <Switch>
-                <Route path='/' exact>
+                {/* <Route path='/' exact>
                     <Home {...props} />
-                </Route>
+                </Route> */}
               <Route path='/classpage'>
                     <ClassesPage {...props} />
                 </Route>
