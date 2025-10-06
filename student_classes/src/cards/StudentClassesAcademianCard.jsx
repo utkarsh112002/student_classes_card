@@ -1,17 +1,18 @@
-
-
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   useData,
+  useCardControl,
   useUserInfo,
-  useCardControl
 } from "@ellucian/experience-extension-utils";
-
+import {
+  Typography,
+  SelectionMenu,
+  TextLink,
+} from "@ellucian/react-design-system/core";
 const StudentClassesCard = () => {
   const { getEthosQuery } = useData();
+  const {navigateToPage, setLoadingStatus, setErrorMessage } = useCardControl();
   const { firstName } = useUserInfo() || {};
-  const { setLoadingStatus, setErrorMessage } = useCardControl();
-
   const [sections, setSections] = useState([]);
   const [terms, setTerms] = useState([]);
   const [selectedTerm, setSelectedTerm] = useState(null);
@@ -25,7 +26,7 @@ const StudentClassesCard = () => {
 
         const result = await getEthosQuery({
           queryId: "section-registrations",
-          properties: { personId: null } // auto-populated by Experience
+          properties: { personId: null }, // auto-populated by Experience
         });
 
         const registrations = result?.data?.sectionRegistration?.edges || [];
@@ -48,7 +49,7 @@ const StudentClassesCard = () => {
         // Pick current term
         const today = new Date();
         const currentTerm = sortedTerms.find(
-          t => new Date(t.startOn) <= today && new Date(t.endOn) >= today
+          (t) => new Date(t.startOn) <= today && new Date(t.endOn) >= today
         );
         setSelectedTerm(currentTerm || sortedTerms[0]);
       } catch (err) {
@@ -56,7 +57,7 @@ const StudentClassesCard = () => {
           headerMessage: "Error fetching student sections",
           textMessage: err.message,
           iconName: "error",
-          iconColor: "red"
+          iconColor: "red",
         });
       } finally {
         setLoading(false);
@@ -67,6 +68,16 @@ const StudentClassesCard = () => {
     fetchSections();
   }, [getEthosQuery, setLoadingStatus, setErrorMessage]);
 
+  // const sectionsForTerm =[];
+  const sectionsForTerm = useMemo(
+    () =>
+      sections.filter(
+        ({ node }) =>
+          node.section16?.reportingAcademicPeriod16?.id === selectedTerm?.id
+      ) || [],
+    [selectedTerm, sections]
+  );
+
   if (loading) {
     return <p>Loading your classes…</p>;
   }
@@ -75,46 +86,46 @@ const StudentClassesCard = () => {
     return <p>No registered sections found.</p>;
   }
 
-  const sectionsForTerm = sections.filter(
-    ({ node }) =>
-      node.section16?.reportingAcademicPeriod16?.id === selectedTerm?.id
-  );
+
+   const handleClick = (event) => {
+    console.log(event);
+    // const selected = results[index];
+
+    // console.log(selected, "selected", results);
+    // if (selected) {
+      navigateToPage({
+        route: `classpage?selectedTerm=${selectedTerm.id}`,
+        // state: { item: selected },
+      });
+    // }
+  };
 
   return (
-    <div style={{ padding: "1rem", maxHeight: "500px", overflowY: "auto" }}>
+    <div style={{ padding: "1rem", overflowY: "auto", margin: 0 }}>
       <h3 style={{ marginBottom: "0.5rem" }}>
         Hello {firstName || "Student"} 👋
       </h3>
-
       {/* Term Selector */}
       <div style={{ marginBottom: "1rem" }}>
-        <div style={{ fontWeight: "bold", marginRight: "0.5rem" }}>Term:</div>
-        <select
-          value={selectedTerm?.id || ""}
-          onChange={e => {
+        <Typography style={{ fontWeight: "bold", marginRight: "0.5rem" }}>
+          Term:
+        </Typography>
+
+        <SelectionMenu
+          id="term-selector"
+          native
+          ListItemProps={{ "aria-label": "Select Term" }}
+          onChange={(e) => {
             e.stopPropagation();
-            setSelectedTerm(terms.find(t => t.id === e.target.value));
-          }}
-          onMouseDown={e => e.stopPropagation()}
-          onClick={e => e.stopPropagation()}
-          onFocus={e => e.stopPropagation()}
-          onKeyDown={e => e.stopPropagation()}
-          style={{
-            padding: "0.25rem 0.5rem",
-            fontSize: "1rem",
-            borderRadius: "6px",
-            border: "1px solid #ccc"
+            setSelectedTerm(terms.find((t) => t.id === e.target.value));
           }}
         >
-          <option value="" disabled>
-            Select term
-          </option>
-          {terms.map(term => (
+          {terms.map((term) => (
             <option key={term.id} value={term.id}>
               {term.title}
             </option>
           ))}
-        </select>
+        </SelectionMenu>
       </div>
 
       {/* Course List */}
@@ -143,27 +154,18 @@ const StudentClassesCard = () => {
               style={{
                 padding: "0.75rem",
                 marginBottom: "0.5rem",
-                borderBottom: "1px solid #eee"
+                borderBottom: "1px solid #eee",
               }}
             >
               {/* Course Title Link */}
-              <a
-                href={`/courses/${section?.id}`}
-                onClick={e => {
-                  e.preventDefault(); // stop browser from full-page reload
-                  e.stopPropagation(); // prevent bubbling
-                }}
-                style={{
-                  fontWeight: "bold",
-                  color: "#1976d2",
-                  textDecoration: "none",
-                  display: "block",
-                  marginBottom: "0.25rem"
-                }}
+              <TextLink
+                id={`EllucianEnabled`}
+                // target=
+                onClick={handleClick}
+                // href={`/`}
               >
                 {title}
-              </a>
-
+              </TextLink>
               <div style={{ fontSize: "0.85rem", color: "#555" }}>
                 {meetingTime}
               </div>

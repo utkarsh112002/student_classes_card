@@ -61,15 +61,14 @@ module.exports = {
     {
       type: "StudentClassesAcademianCard",
       source: "./src/cards/StudentClassesAcademianCard",
-      title: "StudentClassesAcademian Card",
-      displayCardType: "StudentClassesAcademian Card",
+      title: "Student Classes",
+      displayCardType: "Student Classes Card by Academian",
       description:
         "This is an introductory card to the Ellucian Experience SDK",
- 
-      pageRoute: {
-          route: '/classpage',
-          excludeClickSelectors: ['a']
-      }
+      // pageRoute: {
+      //     route: '/classpage',
+      //     excludeClickSelectors: ['a']
+      // }
     },
   ],
   page: {
