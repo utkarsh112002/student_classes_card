@@ -64,7 +64,7 @@ module.exports = {
           grades: { min: 6 },
           schemes: { min: 6 },
           sections: { min: 16 },
-          courses: { min: 16 }
+          courses: { min: 16}
         },
         query: `
         query getStudentTranscriptGrade($personId: ID) {
