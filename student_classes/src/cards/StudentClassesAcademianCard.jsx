@@ -1,22 +1,26 @@
 import React, { useEffect, useMemo, useState } from "react";
-import {
-  useData,
-  useCardControl,
-  useUserInfo,
-} from "@ellucian/experience-extension-utils";
+import { useData, useCardControl } from "@ellucian/experience-extension-utils";
 import {
   Typography,
   SelectionMenu,
   TextLink,
 } from "@ellucian/react-design-system/core";
-const StudentClassesCard = () => {
+import PropTypes from "prop-types";
+const StudentClassesCard = (props) => {
+  const {
+    cardInfo: { configuration },
+  } = props;
   const { getEthosQuery } = useData();
-  const {navigateToPage, setLoadingStatus, setErrorMessage } = useCardControl();
-  const { firstName } = useUserInfo() || {};
+  const { navigateToPage, setLoadingStatus, setErrorMessage } =
+    useCardControl();
   const [sections, setSections] = useState([]);
   const [terms, setTerms] = useState([]);
   const [selectedTerm, setSelectedTerm] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    console.log(configuration, "configuration");
+  }, [configuration]);
 
   useEffect(() => {
     async function fetchSections() {
@@ -86,25 +90,21 @@ const StudentClassesCard = () => {
     return <p>No registered sections found.</p>;
   }
 
-
-   const handleClick = (event) => {
+  const handleClick = (event) => {
     console.log(event);
     // const selected = results[index];
 
     // console.log(selected, "selected", results);
     // if (selected) {
-      navigateToPage({
-        route: `classpage?selectedTerm=${selectedTerm.id}`,
-        // state: { item: selected },
-      });
+    navigateToPage({
+      route: `classpage?selectedTerm=${selectedTerm.id}&extension_canvas_url=${configuration?.extension_canvas_url}`,
+      // state: { item: selected },
+    });
     // }
   };
 
   return (
     <div style={{ padding: "1rem", overflowY: "auto", margin: 0 }}>
-      <h3 style={{ marginBottom: "0.5rem" }}>
-        Hello {firstName || "Student"} 👋
-      </h3>
       {/* Term Selector */}
       <div style={{ marginBottom: "1rem" }}>
         <Typography style={{ fontWeight: "bold", marginRight: "0.5rem" }}>
@@ -114,7 +114,11 @@ const StudentClassesCard = () => {
         <SelectionMenu
           id="term-selector"
           native
-          ListItemProps={{ "aria-label": "Select Term" }}
+          ListItemProps={{
+            "aria-label": "Select Term",
+            innerHeight: 50,
+            outerHeight: 50,
+          }}
           onChange={(e) => {
             e.stopPropagation();
             setSelectedTerm(terms.find((t) => t.id === e.target.value));
@@ -155,7 +159,7 @@ const StudentClassesCard = () => {
               style={{
                 padding: "0.75rem",
                 marginBottom: "0.5rem",
-                borderBottom: "1px solid #eee",
+                borderBottom: "1px solid #454444ff",
               }}
             >
               {/* Course Title Link */}
@@ -177,5 +181,7 @@ const StudentClassesCard = () => {
     </div>
   );
 };
-
+StudentClassesCard.propTypes = {
+  cardInfo: PropTypes.object.isRequired,
+};
 export default StudentClassesCard;

@@ -1,6 +1,17 @@
 module.exports = {
   name: "StudentClassesAcademian",
   publisher: "Utkarsh",
+   configuration: {
+    client: [
+      {
+        key: "extension_canvas_url",
+        label: "Canvas url",
+        type: "url",
+        required: true,
+      },
+    ],
+    
+  },
   queries: {
     "section-registrations": [
       {
@@ -64,39 +75,38 @@ module.exports = {
         },
         query: `
         query getStudentTranscriptGrade($personId: ID) {
-  studentTranscriptGrades1(filter: { student12: { id: { EQ: $personId } } }) {
-    edges {
-      node {
-        student12 {
-          id
-        }
-        grade6 {
-          id
-          grade {
-            type
-            value
-            minValue
-            maxValue
-            increment
+          studentTranscriptGrades1(filter: { student12: { id: { EQ: $personId } } }) {
+            edges {
+              node {
+                student12 {
+                  id
+                }
+                grade6 {
+                  id
+                  grade {
+                    type
+                    value
+                    minValue
+                    maxValue
+                    increment
+                  }
+                  scheme6 {
+                    id
+                  }
+                }
+                course {
+                  section16 {
+                    id
+                  }
+                }
+              }
+            }
           }
-          scheme6 {
-            id
-          }
         }
-        course {
-          section16 {
-            id
-          }
-        }
-      }
-    }
-  }
-}
- `,
+      `,
       },
     ],
   },
-
   cards: [
     {
       type: "StudentClassesAcademianCard",
@@ -105,10 +115,6 @@ module.exports = {
       displayCardType: "Student Classes Card by Academian",
       description:
         "This is an introductory card to the Ellucian Experience SDK",
-      // pageRoute: {
-      //     route: '/classpage',
-      //     excludeClickSelectors: ['a']
-      // }
     },
   ],
   page: {

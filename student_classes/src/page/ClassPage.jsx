@@ -1,10 +1,12 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from "react";
 import { useData, usePageControl } from "@ellucian/experience-extension-utils";
 import { SelectionMenu, TextLink } from "@ellucian/react-design-system/core";
 import { useLocation } from "react-router-dom";
+
 const ClassesPage = () => {
   const defaultTermId = null;
-
   const { getEthosQuery } = useData();
   const { setPageTitle } = usePageControl();
 
@@ -12,63 +14,83 @@ const ClassesPage = () => {
   const [terms, setTerms] = useState([]);
   const [selectedTerm, setSelectedTerm] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [gradesWithSectionArr, setGradesWithSectionArr] = useState([]);
 
   const { search } = useLocation();
   const searchParams = new URLSearchParams(search);
   const selectedTermQueryValue = searchParams.get("selectedTerm");
-
-   useEffect(() => {
-  async function fetchData() {
-    setLoading(true);
-    try {
-      const result = await getEthosQuery({
-        queryId: "student-grades",
-        properties: { personId: null },
-      });
-
-      console.log(result, "grade result")
-    }
-    catch(error){
-      console.error(error);
-    }
-  }
-  fetchData()
-}, [getEthosQuery]);
+  const extension_canvas_url = searchParams.get("extension_canvas_url");
 
   useEffect(() => {
     setPageTitle("Classes");
   }, [setPageTitle]);
 
-  useEffect(() => {
-  async function fetchData() {
-    setLoading(true);
+  // Fetch grades first
+  const fetchGrades = async () => {
+    try {
+      setLoading(true);
+
+      const result = await getEthosQuery({
+        queryId: "student-grades",
+        properties: { personId: null },
+      });
+
+      const grades =
+        result?.data?.studentTranscriptGrades1?.edges?.map((el) => ({
+          sectionId: el?.node?.course?.section16?.id || "",
+          grade: el?.node?.grade6?.grade?.value || "",
+        })) || [];
+
+      console.log("Fetched grades:", grades);
+      setGradesWithSectionArr(grades);
+
+      // Fetch sections once grades are available
+      await fetchSections(grades);
+    } catch (error) {
+      console.error("Error fetching grades:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch section registrations after grades are available
+  const fetchSections = async (gradeArr) => {
     try {
       const result = await getEthosQuery({
         queryId: "section-registrations",
         properties: { personId: null },
       });
 
-      const registrations = result?.data?.sectionRegistration?.edges || [];
+      const registrations =
+        result?.data?.sectionRegistration?.edges?.map((el) => {
+          const sectionId = el?.node?.section16?.id;
+          const gradeObj = gradeArr.find((g) => g.sectionId === sectionId);
+
+          return {
+            ...el,
+            grade: gradeObj?.grade || "",
+          };
+        }) || [];
+
       setSections(registrations);
 
+      // Build term list
       const termMap = {};
       registrations.forEach(({ node }) => {
-        const term = node.section16?.reportingAcademicPeriod16;
-        if (term && !termMap[term.id]) {
-          termMap[term.id] = term;
-        }
+        const term = node?.section16?.reportingAcademicPeriod16;
+        if (term && !termMap[term.id]) termMap[term.id] = term;
       });
 
       const sortedTerms = Object.values(termMap).sort(
         (a, b) => new Date(b.startOn) - new Date(a.startOn)
       );
+
       setTerms(sortedTerms);
 
-      // 🔑 Apply search param if available
+      // Apply selected term from query or default
       const termFromQuery = sortedTerms.find(
         (t) => t.id === selectedTermQueryValue
       );
-
       if (termFromQuery) {
         setSelectedTerm(termFromQuery);
       } else {
@@ -76,41 +98,40 @@ const ClassesPage = () => {
         setSelectedTerm(current || sortedTerms[0]);
       }
     } catch (err) {
-      console.error("Error fetching classes:", err);
-    } finally {
-      setLoading(false);
+      console.error("Error fetching sections:", err);
     }
-  }
-  fetchData();
-}, [getEthosQuery, defaultTermId, selectedTermQueryValue]);
+  };
+
+  // Run fetch on mount
+  useEffect(() => {
+    fetchGrades();
+    return () => {
+      setGradesWithSectionArr([]);
+      setSections([]);
+      setTerms([]);
+      setLoading(false);
+    };
+  }, [getEthosQuery]);
 
   if (loading) return <p>Loading Classes…</p>;
   if (!sections.length) return <p>No registered classes found.</p>;
 
   const sectionsForTerm = sections.filter(
     ({ node }) =>
-      node.section16?.reportingAcademicPeriod16?.id === selectedTerm?.id
+      node?.section16?.reportingAcademicPeriod16?.id === selectedTerm?.id
   );
 
-  const formatMeetings = (meetings) => {
-    if (!meetings || !meetings.length) return "WEB";
-    return meetings
-      .map((m) => {
-        const days = m.daysOfWeek?.join("/") || "";
-        const start = new Date(m.startOn).toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        });
-        const end = new Date(m.endOn).toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        });
-        return `${days} ${start} - ${end}`;
-      })
-      .join(", ");
+  const formatMeetings = (section) => {
+    if (!section) return "WEB";
+    const meetingTime =
+      section?.startOn && section?.endOn
+        ? `${new Date(section.startOn).toLocaleDateString()} - ${new Date(
+            section.endOn
+          ).toLocaleDateString()}`
+        : "WEB";
+    return meetingTime;
   };
 
-  // Grade badge styling
   const gradeBadge = (grade) => {
     if (!grade) return null;
     return (
@@ -135,7 +156,7 @@ const ClassesPage = () => {
 
   return (
     <div style={{ padding: "1rem" }}>
-      {/* Header with term dropdown + Canvas link */}
+      {/* Header */}
       <div
         style={{
           display: "flex",
@@ -151,21 +172,32 @@ const ClassesPage = () => {
             e.stopPropagation();
             setSelectedTerm(terms.find((t) => t.id === e.target.value));
           }}
-          value={selectedTerm.id}
+          value={selectedTerm?.id || ""}
         >
-            {terms.map((term) => (
+          {terms.map((term) => (
             <option key={term.id} value={term.id}>
               {term.title}
             </option>
           ))}
         </SelectionMenu>
-        <TextLink id={`EllucianEnabled`} href={"https://www.ellucian.com/"} target={"__blank"}>Canvas →</TextLink>
+
+        <TextLink
+          id={`EllucianEnabled`}
+          href={
+            extension_canvas_url
+              ? extension_canvas_url
+              : "https://www.ellucian.com/"
+          }
+          target={"__blank"}
+        >
+          Canvas →
+        </TextLink>
       </div>
 
       {/* Course list */}
       <div>
-        {sectionsForTerm.map(({ node }, index) => {
-          const section = node.section16;
+        {sectionsForTerm.map(({ node, grade }, index) => {
+          const section = node?.section16;
           const course = section?.course16;
           const subject = course?.subject6?.abbreviation || "";
           const number = course?.number || "";
@@ -173,14 +205,12 @@ const ClassesPage = () => {
             course?.titles?.[0]?.value || section?.titles?.[0]?.value;
           const courseName = `${subject} ${number} ${title}`;
 
-          const meetingTimes = formatMeetings(section?.meetings16);
+          const meetingTimes = formatMeetings(section);
           const location = section?.campus16
             ? `${section.campus16.title}, ${section.building16?.title || ""} ${
                 section.room16?.title || ""
               }`
             : "";
-
-          const grade = node?.finalGrade;
 
           return (
             <div
