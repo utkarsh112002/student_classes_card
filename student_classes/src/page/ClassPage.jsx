@@ -17,6 +17,24 @@ const ClassesPage = () => {
   const searchParams = new URLSearchParams(search);
   const selectedTermQueryValue = searchParams.get("selectedTerm");
 
+   useEffect(() => {
+  async function fetchData() {
+    setLoading(true);
+    try {
+      const result = await getEthosQuery({
+        queryId: "student-grades",
+        properties: { personId: null },
+      });
+
+      console.log(result, "grade result")
+    }
+    catch(error){
+      console.error(error);
+    }
+  }
+  fetchData()
+}, [getEthosQuery]);
+
   useEffect(() => {
     setPageTitle("Classes");
   }, [setPageTitle]);

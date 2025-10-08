@@ -56,7 +56,51 @@ module.exports = {
       `,
       },
     ],
+    "student-grades": [
+      {
+        resourceVersions: {
+          studentTranscriptGrades: { min: 1 },
+          students: { min: 12 },
+          grades: { min: 6 },
+          schemes: { min: 6 },
+          sections: { min: 16 },
+          courses: { min: 16 }
+        },
+        query: `
+        query getStudentTranscriptGrade($personId: ID) {
+  studentTranscriptGrades1(filter: { student12: { id: { EQ: $personId } } }) {
+    edges {
+      node {
+        student12 {
+          id
+        }
+        grade6 {
+          id
+          grade {
+            type
+            value
+            minValue
+            maxValue
+            increment
+          }
+          scheme6 {
+            id
+          }
+        }
+        course {
+          section16 {
+            id
+          }
+        }
+      }
+    }
+  }
+}
+ `,
+      },
+    ],
   },
+
   cards: [
     {
       type: "StudentClassesAcademianCard",
@@ -75,5 +119,3 @@ module.exports = {
     source: "./src/page/router.jsx",
   },
 };
- 
- 

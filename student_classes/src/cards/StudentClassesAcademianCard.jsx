@@ -119,6 +119,7 @@ const StudentClassesCard = () => {
             e.stopPropagation();
             setSelectedTerm(terms.find((t) => t.id === e.target.value));
           }}
+          value={selectedTerm.id}
         >
           {terms.map((term) => (
             <option key={term.id} value={term.id}>
