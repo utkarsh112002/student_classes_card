@@ -60,11 +60,7 @@ module.exports = {
       {
         resourceVersions: {
           studentTranscriptGrades: { min: 1 },
-          students: { min: 12 },
-          grades: { min: 6 },
-          schemes: { min: 6 },
-          sections: { min: 16 },
-          courses: { min: 16 }
+          students: { min: 5 },
         },
         query: `
         query getStudentTranscriptGrade($personId: ID) {

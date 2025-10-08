@@ -17,6 +17,8 @@ const ClassesPage = () => {
   const searchParams = new URLSearchParams(search);
   const selectedTermQueryValue = searchParams.get("selectedTerm");
 
+
+
    useEffect(() => {
   async function fetchData() {
     setLoading(true);
