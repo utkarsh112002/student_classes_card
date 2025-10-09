@@ -7,6 +7,7 @@ import {
 } from 'react-router-dom';
 // import Home from './Home';
 import ClassesPage from './ClassPage';
+import CoursePage from './coursePage';
 
 // for more information on react router: https://v5.reactrouter.com/web/guides/quick-start
 
@@ -19,6 +20,9 @@ const RouterPage = (props) => {
                 </Route> */}
               <Route path='/classpage'>
                     <ClassesPage {...props} />
+                </Route>
+                                <Route path='/coursePage'>
+                    <CoursePage {...props} />  {/* ✅ new route */}
                 </Route>
             </Switch>
         </Router>

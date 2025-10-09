@@ -201,6 +201,7 @@ const ClassesPage = () => {
           const course = section?.course16;
           const subject = course?.subject6?.abbreviation || "";
           const number = course?.number || "";
+           const academicPeriod = section?.reportingAcademicPeriod16;
           const title =
             course?.titles?.[0]?.value || section?.titles?.[0]?.value;
           const courseName = `${subject} ${number} ${title}`;
@@ -211,6 +212,44 @@ const ClassesPage = () => {
                 section.room16?.title || ""
               }`
             : "";
+
+              const handleClick = () => {
+              // Store complete course information including academic period and section details
+              const courseData = {
+                courseId: course?.id || "",
+                courseName: title || "",
+                courseNumber: number || "",
+                courseTitle: course?.titles?.[0]?.value || "",
+                subjectId: course?.subject6?.id || "",
+                subjectAbbreviation: subject || "",
+                subjectTitle: course?.subject6?.title || "",
+                sectionId: section?.id || "",
+                sectionCode: section?.code || "",
+                sectionNumber: section?.number || "",
+                termId: selectedTerm?.id || "",
+                termTitle: selectedTerm?.title || "",
+                startOn: section?.startOn || null,
+                endOn: section?.endOn || null,
+                // Adding academic period data
+                academicPeriod: {
+                  id: academicPeriod?.id || "",
+                  code: academicPeriod?.code || "",
+                  title: academicPeriod?.title || "",
+                  startOn: academicPeriod?.startOn || null,
+                  endOn: academicPeriod?.endOn || null
+                },
+                // Adding section details
+                section: {
+                  id: section?.id || "",
+                  titles: section?.titles || []
+                }
+              };
+              
+              localStorage.setItem("selectedCourse", JSON.stringify(courseData));
+
+              // Navigate to coursePage
+              history.push(`/coursePage?sectionId=${section.id}`);
+            };
 
           return (
             <div
@@ -224,7 +263,7 @@ const ClassesPage = () => {
               }}
             >
               <div>
-                <TextLink id={`EllucianEnabled-${index}`}>
+                <TextLink id={`EllucianEnabled-${index}`} onClick={handleClick}>
                   {courseName}
                 </TextLink>
                 <div style={{ fontSize: "0.85rem", color: "#555" }}>

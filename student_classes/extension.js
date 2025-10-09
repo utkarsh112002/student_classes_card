@@ -1,7 +1,7 @@
 module.exports = {
   name: "StudentClassesAcademian",
   publisher: "Utkarsh",
-   configuration: {
+  configuration: {
     client: [
       {
         key: "extension_canvas_url",
@@ -10,7 +10,6 @@ module.exports = {
         required: true,
       },
     ],
-    
   },
   queries: {
     "section-registrations": [
@@ -97,6 +96,78 @@ module.exports = {
                 course {
                   section16 {
                     id
+                  }
+                }
+              }
+            }
+          }
+        }
+      `,
+      },
+    ],
+    "section-instructors": [
+      {
+        resourceVersions: {
+          sectionInstructors: { min: 10 },
+          sections: { min: 16 },
+          persons: { min: 12 },
+          instructionalDeliveryMethods: { min: 11 },
+        },
+        query: `
+        query getSectionInstructorsFull($sectionIds: [ID]) {
+          sectionInstructors10(filter: { section16: { id: { IN: $sectionIds } } }) {
+            edges {
+              node {
+                id
+                instructorRole
+                instructor12 {
+                  id
+                  roles {
+                    role
+                  }
+                  credentials {
+                    type
+                    value
+                  }
+                  names {
+                    firstName
+                    lastName
+                    fullName
+                    middleName
+                    preference
+                  }
+                  emails {
+                    address
+                    preference
+                    type {
+                      emailType
+                    }
+                  }
+                  phones {
+                    number
+                    preference
+                    type {
+                      phoneType
+                    }
+                  }
+                  addresses {
+                    type {
+                      addressType
+                    }
+                    address11 {
+                      addressLines
+                    }
+                  }
+                }
+                section16 {
+                  id
+                  number
+                  code
+                  instructionalDeliveryMethod11 {
+                    id
+                    title
+                    code
+                    description
                   }
                 }
               }
