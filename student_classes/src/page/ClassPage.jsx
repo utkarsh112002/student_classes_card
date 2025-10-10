@@ -1,9 +1,10 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
+
 import React, { useEffect, useState } from "react";
 import { useData, usePageControl } from "@ellucian/experience-extension-utils";
 import { SelectionMenu, TextLink } from "@ellucian/react-design-system/core";
-import { useLocation } from "react-router-dom";
+import { useLocation ,useHistory} from "react-router-dom";
 
 const ClassesPage = () => {
   const defaultTermId = null;
@@ -15,7 +16,7 @@ const ClassesPage = () => {
   const [selectedTerm, setSelectedTerm] = useState(null);
   const [loading, setLoading] = useState(true);
   const [gradesWithSectionArr, setGradesWithSectionArr] = useState([]);
-
+ const history = useHistory();
   const { search } = useLocation();
   const searchParams = new URLSearchParams(search);
   const selectedTermQueryValue = searchParams.get("selectedTerm");
@@ -201,7 +202,7 @@ const ClassesPage = () => {
           const course = section?.course16;
           const subject = course?.subject6?.abbreviation || "";
           const number = course?.number || "";
-           const academicPeriod = section?.reportingAcademicPeriod16;
+          const academicPeriod = section?.reportingAcademicPeriod16;
           const title =
             course?.titles?.[0]?.value || section?.titles?.[0]?.value;
           const courseName = `${subject} ${number} ${title}`;
@@ -213,43 +214,45 @@ const ClassesPage = () => {
               }`
             : "";
 
-              const handleClick = () => {
-              // Store complete course information including academic period and section details
-              const courseData = {
-                courseId: course?.id || "",
-                courseName: title || "",
-                courseNumber: number || "",
-                courseTitle: course?.titles?.[0]?.value || "",
-                subjectId: course?.subject6?.id || "",
-                subjectAbbreviation: subject || "",
-                subjectTitle: course?.subject6?.title || "",
-                sectionId: section?.id || "",
-                sectionCode: section?.code || "",
-                sectionNumber: section?.number || "",
-                termId: selectedTerm?.id || "",
-                termTitle: selectedTerm?.title || "",
-                startOn: section?.startOn || null,
-                endOn: section?.endOn || null,
-                // Adding academic period data
-                academicPeriod: {
-                  id: academicPeriod?.id || "",
-                  code: academicPeriod?.code || "",
-                  title: academicPeriod?.title || "",
-                  startOn: academicPeriod?.startOn || null,
-                  endOn: academicPeriod?.endOn || null
-                },
-                // Adding section details
-                section: {
-                  id: section?.id || "",
-                  titles: section?.titles || []
-                }
-              };
-              
-              localStorage.setItem("selectedCourse", JSON.stringify(courseData));
-
-              // Navigate to coursePage
-              history.push(`/coursePage?sectionId=${section.id}`);
+          const handleClick = () => {
+            // Store complete course information including academic period and section details
+            const courseData = {
+              courseId: course?.id || "",
+              courseName: title || "",
+              courseNumber: number || "",
+              courseTitle: course?.titles?.[0]?.value || "",
+              subjectId: course?.subject6?.id || "",
+              subjectAbbreviation: subject || "",
+              subjectTitle: course?.subject6?.title || "",
+              sectionId: section?.id || "",
+              sectionCode: section?.code || "",
+              sectionNumber: section?.number || "",
+              termId: selectedTerm?.id || "",
+              termTitle: selectedTerm?.title || "",
+              startOn: section?.startOn || null,
+              endOn: section?.endOn || null,
+              // Adding academic period data
+              academicPeriod: {
+                id: academicPeriod?.id || "",
+                code: academicPeriod?.code || "",
+                title: academicPeriod?.title || "",
+                startOn: academicPeriod?.startOn || null,
+                endOn: academicPeriod?.endOn || null,
+              },
+              // Adding section details
+              section: {
+                id: section?.id || "",
+                titles: section?.titles || [],
+              },
             };
+
+            localStorage.setItem("selectedCourse", JSON.stringify(courseData));
+
+              console.log("navigation started")
+            // Navigate to coursePage
+            history.push(`/coursePage?sectionId=${section.id}`);
+       
+          };
 
           return (
             <div
