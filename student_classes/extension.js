@@ -114,8 +114,11 @@ module.exports = {
           instructionalDeliveryMethods: { min: 11 },
         },
         query: `
-        query getSectionInstructorsFull($sectionIds: [ID]) {
-          sectionInstructors10(filter: { section16: { id: { IN: $sectionIds } } }) {
+        query getSectionInstructorsFull($sectionIds: [ID], $personId: ID) {
+          sectionInstructors10( filter: {
+            section16: { id: { IN: $sectionIds } }
+            instructor12: { id: { EQ: $personId } }
+          }) {
             edges {
               node {
                 id
