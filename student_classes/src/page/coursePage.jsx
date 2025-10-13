@@ -3,7 +3,11 @@ import React, { useEffect, useState } from "react";
 import { usePageControl, useData } from "@ellucian/experience-extension-utils";
 import { useLocation, useHistory } from "react-router-dom";
 
-const CoursePage = () => {
+const CoursePage = (props) => {
+  const {
+    cardInfo: { cardId },
+  } = props;
+
   const { authenticatedEthosFetch } = useData();
   const { setPageTitle } = usePageControl();
   const history = useHistory();
@@ -50,14 +54,16 @@ const CoursePage = () => {
       if (!isMounted) return;
       
       try {
-        console.log("=== INSTRUCTIONAL EVENTS DEBUG ===");
-        console.log("Fetching instructional events for sectionId:", sectionId);
+        // console.log("=== INSTRUCTIONAL EVENTS DEBUG ===");
+        // console.log("Fetching instructional events for sectionId:", sectionId);
 
         const queryParams = new URLSearchParams();
         queryParams.append('sectionId', sectionId);
+        queryParams.append('cardId', cardId);
+        queryParams.append('ethosAPIKey', "2e5330bd-483a-42c8-925b-d59edf93345f");
 
         const resource = `GetInstructionalEvents-ServerlessAPI?${queryParams.toString()}`;
-        console.log("Full resource URL:", resource);
+        // console.log("Full resource URL:", resource);
         
         const options = {
           method: 'GET',
@@ -67,10 +73,11 @@ const CoursePage = () => {
           },
         };
 
+
         const response = await authenticatedEthosFetch(resource, options);
         
-        console.log("Response status:", response.status);
-        console.log("Response ok:", response.ok);
+        // console.log("Response status:", response.status);
+        // console.log("Response ok:", response.ok);
         
         if (!response.ok) {
           const errorText = await response.text();
@@ -79,9 +86,9 @@ const CoursePage = () => {
         }
 
         const data = await response.json();
-        console.log("✓ Instructional Events API response:", data);
-        console.log("Response type:", typeof data);
-        console.log("Is array:", Array.isArray(data));
+        // console.log("✓ Instructional Events API response:", data);
+        // console.log("Response type:", typeof data);
+        // console.log("Is array:", Array.isArray(data));
         
         if (data.errors && data.errors.length > 0) {
           console.error("API returned errors:", data.errors);
@@ -91,27 +98,27 @@ const CoursePage = () => {
         let events = [];
         
         if (Array.isArray(data) && data.length > 0) {
-          console.log("Found events in direct array");
+          // console.log("Found events in direct array");
           events = data;
         } else if (data.data && Array.isArray(data.data)) {
-          console.log("Found events in data.data");
+          // console.log("Found events in data.data");
           events = data.data;
         } else if (data.payload && Array.isArray(data.payload)) {
-          console.log("Found events in data.payload");
+          // console.log("Found events in data.payload");
           events = data.payload;
         } else if (data.instructionalEvents && Array.isArray(data.instructionalEvents)) {
-          console.log("Found events in data.instructionalEvents");
+          // console.log("Found events in data.instructionalEvents");
           events = data.instructionalEvents;
         } else if (data.message && Array.isArray(data.message)) {
-          console.log("Found events in data.message");
+          // console.log("Found events in data.message");
           events = data.message;
         } else {
           console.warn("Could not find events in any known structure. Full response:", JSON.stringify(data, null, 2));
         }
         
-        console.log("Extracted instructional events count:", events.length);
+        // console.log("Extracted instructional events count:", events.length);
         if (events.length > 0) {
-          console.log("Sample event:", events[0]);
+          // console.log("Sample event:", events[0]);
         }
         
         if (isMounted) {
@@ -131,15 +138,15 @@ const CoursePage = () => {
       if (!isMounted) return;
 
       try {
-        console.log("=== SECTION INSTRUCTORS DEBUG ===");
-        console.log("Fetching instructors for sectionId:", sectionId);
-        console.log("Full URL params:", search);
+        // console.log("=== SECTION INSTRUCTORS DEBUG ===");
+        // console.log("Fetching instructors for sectionId:", sectionId);
+        // console.log("Full URL params:", search);
 
         const queryParams = new URLSearchParams();
         queryParams.append('sectionId', sectionId);
 
         const resource = `GetSectionInstructors-ServerlessAPI?${queryParams.toString()}`;
-        console.log("Full resource URL:", resource);
+        // console.log("Full resource URL:", resource);
         
         const options = {
           method: 'GET',
@@ -151,9 +158,9 @@ const CoursePage = () => {
 
         const response = await authenticatedEthosFetch(resource, options);
 
-        console.log("Response status:", response.status);
-        console.log("Response ok:", response.ok);
-        console.log("Response headers:", response.headers);
+        // console.log("Response status:", response.status);
+        // console.log("Response ok:", response.ok);
+        // console.log("Response headers:", response.headers);
 
         if (!response.ok) {
           const errorText = await response.text();
@@ -163,9 +170,9 @@ const CoursePage = () => {
         }
 
         const data = await response.json();
-        console.log("✓ API response received:", data);
-        console.log("Response type:", typeof data);
-        console.log("Is array:", Array.isArray(data));
+        // console.log("✓ API response received:", data);
+        // console.log("Response type:", typeof data);
+        // console.log("Is array:", Array.isArray(data));
         
         if (data.errors && data.errors.length > 0) {
           console.error("API returned errors:", data.errors);
@@ -176,30 +183,30 @@ const CoursePage = () => {
         
         // Handle different response structures
         if (Array.isArray(data)) {
-          console.log("Found instructors in direct array");
+          // console.log("Found instructors in direct array");
           instructorData = data;
         } else if (data.data && Array.isArray(data.data)) {
-          console.log("Found instructors in data.data");
+          // console.log("Found instructors in data.data");
           instructorData = data.data;
         } else if (data.payload && Array.isArray(data.payload)) {
-          console.log("Found instructors in data.payload");
+          // console.log("Found instructors in data.payload");
           instructorData = data.payload;
         } else if (data.message && Array.isArray(data.message)) {
-          console.log("Found instructors in data.message");
+          // console.log("Found instructors in data.message");
           instructorData = data.message;
         } else {
           // Try to extract from the first item if it has a payload
           if (Array.isArray(data) && data.length > 0 && data[0].payload) {
-            console.log("Found instructors in data[0].payload");
+            // console.log("Found instructors in data[0].payload");
             instructorData = data[0].payload;
           } else {
             console.warn("Could not find instructors in any known structure. Full response:", JSON.stringify(data, null, 2));
           }
         }
 
-        console.log("Extracted instructor data count:", instructorData.length);
+        // console.log("Extracted instructor data count:", instructorData.length);
         if (instructorData.length > 0) {
-          console.log("Sample instructor:", instructorData[0]);
+          // console.log("Sample instructor:", instructorData[0]);
         }
 
         if (instructorData.length === 0) {
@@ -223,8 +230,8 @@ const CoursePage = () => {
           },
         }));
 
-        console.log("Mapped instructors count:", mappedInstructors.length);
-        console.log("Sample mapped instructor:", mappedInstructors[0]);
+        // console.log("Mapped instructors count:", mappedInstructors.length);
+        // console.log("Sample mapped instructor:", mappedInstructors[0]);
 
         const instructorsWithDetails = await Promise.all(
           mappedInstructors.map(async (instructor) => {
@@ -236,7 +243,7 @@ const CoursePage = () => {
                 return instructor;
               }
               
-              console.log("Fetching person details for:", personId);
+              // console.log("Fetching person details for:", personId);
               
               const personQueryParams = new URLSearchParams();
               personQueryParams.append('personId', personId);
@@ -253,7 +260,7 @@ const CoursePage = () => {
               
               if (personResponse.ok) {
                 const personData = await personResponse.json();
-                console.log("Person API response for", personId, ":", personData);
+                // console.log("Person API response for", personId, ":", personData);
                 
                 let person = null;
                 if (personData.id) {
@@ -267,7 +274,7 @@ const CoursePage = () => {
                 }
                 
                 if (person && person.id) {
-                  console.log("✓ Person details fetched successfully for:", personId);
+                  // console.log("✓ Person details fetched successfully for:", personId);
                   return {
                     ...instructor,
                     node: {
@@ -298,7 +305,7 @@ const CoursePage = () => {
         );
         
         if (isMounted) {
-          console.log("✓ All instructor details fetched. Total count:", instructorsWithDetails.length);
+          // console.log("✓ All instructor details fetched. Total count:", instructorsWithDetails.length);
           setInstructors(instructorsWithDetails);
         }
 
