@@ -6,6 +6,7 @@ import {
   TextLink,
 } from "@ellucian/react-design-system/core";
 import PropTypes from "prop-types";
+
 const StudentClassesCard = (props) => {
   const {
     cardInfo: { configuration },
@@ -72,7 +73,6 @@ const StudentClassesCard = (props) => {
     fetchSections();
   }, [getEthosQuery, setLoadingStatus, setErrorMessage]);
 
-  // const sectionsForTerm =[];
   const sectionsForTerm = useMemo(
     () =>
       sections.filter(
@@ -90,17 +90,45 @@ const StudentClassesCard = (props) => {
     return <p>No registered sections found.</p>;
   }
 
-  const handleClick = (event) => {
-    console.log(event);
-    // const selected = results[index];
+  const handleCourseClick = (section) => {
+    const course = section?.course16;
+    const subject = course?.subject6;
+    const academicPeriod = section?.reportingAcademicPeriod16;
 
-    // console.log(selected, "selected", results);
-    // if (selected) {
+    // Store course data in localStorage for the CoursePage
+    const courseData = {
+      sectionId: section?.id,
+      courseName: course?.titles?.[0]?.value || section?.titles?.[0]?.value,
+      subjectAbbreviation: subject?.abbreviation || "",
+      subjectTitle: subject?.title || "",
+      subjectId: subject?.id || "",
+      courseId: course?.id || "",
+      courseNumber: course?.number || "",
+      termTitle: academicPeriod?.title || "",
+      termId: academicPeriod?.id || "",
+      sectionNumber: section?.number || "",
+      sectionCode: section?.code || "",
+      startOn: section?.startOn,
+      endOn: section?.endOn,
+      section: {
+        id: section?.id,
+        titles: section?.titles || [],
+      },
+      academicPeriod: {
+        id: academicPeriod?.id,
+        code: academicPeriod?.code,
+        title: academicPeriod?.title,
+        startOn: academicPeriod?.startOn,
+        endOn: academicPeriod?.endOn,
+      },
+    };
+
+    localStorage.setItem("selectedCourse", JSON.stringify(courseData));
+
+    // Navigate to course page with sectionId
     navigateToPage({
-      route: `classpage?selectedTerm=${selectedTerm.id}&extension_canvas_url=${configuration?.extension_canvas_url}`,
-      // state: { item: selected },
+      route: `coursepage?sectionId=${section?.id}&extension_canvas_url=${configuration?.extension_canvas_url}`,
     });
-    // }
   };
 
   return (
@@ -123,7 +151,7 @@ const StudentClassesCard = (props) => {
             e.stopPropagation();
             setSelectedTerm(terms.find((t) => t.id === e.target.value));
           }}
-          value={selectedTerm.id}
+          value={selectedTerm?.id}
         >
           {terms.map((term) => (
             <option key={term.id} value={term.id}>
@@ -164,10 +192,11 @@ const StudentClassesCard = (props) => {
             >
               {/* Course Title Link */}
               <TextLink
-                id={`EllucianEnabled`}
-                // target=
-                onClick={handleClick}
-                // href={`/`}
+                id={`course-link-${section?.id}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleCourseClick(section);
+                }}
               >
                 {title}
               </TextLink>
@@ -181,7 +210,9 @@ const StudentClassesCard = (props) => {
     </div>
   );
 };
+
 StudentClassesCard.propTypes = {
   cardInfo: PropTypes.object.isRequired,
 };
+
 export default StudentClassesCard;
