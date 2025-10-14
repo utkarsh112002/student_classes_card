@@ -263,7 +263,7 @@ const CoursePage = (props) => {
         const queryParams = new URLSearchParams();
         queryParams.append('sectionId', sectionId);
         queryParams.append('cardId', cardId);
-        queryParams.append('ethosAPIKey', "2e5330bd-483a-42c8-925b-d59edf93345f");
+        queryParams.append('ethosApiKey', "2e5330bd-483a-42c8-925b-d59edf93345f");
 
         const resource = `GetSectionInstructors-ServerlessAPI?${queryParams.toString()}`;
         console.log("Full resource URL:", resource);
@@ -372,7 +372,7 @@ const CoursePage = (props) => {
               const personQueryParams = new URLSearchParams();
               personQueryParams.append('personId', personId);
               personQueryParams.append('cardId', cardId);
-              personQueryParams.append('ethosAPIKey', "2e5330bd-483a-42c8-925b-d59edf93345f");
+              personQueryParams.append('ethosApiKey', "2e5330bd-483a-42c8-925b-d59edf93345f");
               
               const personResource = `GetPersonDetails-ServerlessAPI?${personQueryParams.toString()}`;
               console.log("Person details resource URL:", personResource);
