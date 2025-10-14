@@ -666,7 +666,9 @@ const CoursePage = (props) => {
                 fontWeight: "500"
               }}
               onMouseOver={(e) => e.target.style.backgroundColor = "#0052a3"}
+              onFocus={(e) => e.target.style.backgroundColor = "#0052a3"}
               onMouseOut={(e) => e.target.style.backgroundColor = "#0066cc"}
+              onBlur={(e) => e.target.style.backgroundColor = "#0066cc"}
             >
               ← Back to Classes
             </button>
