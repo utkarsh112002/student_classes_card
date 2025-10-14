@@ -1,4 +1,3 @@
-
 /* eslint-disable react/prop-types */
 import React, { useEffect, useState } from "react";
 import { usePageControl, useData } from "@ellucian/experience-extension-utils";
@@ -28,32 +27,55 @@ const ScheduleLocationInfo = ({ instructionalEvents, courseData }) => {
       daysStr = event.recurrence.repeatRule.daysOfWeek
         .map(day => daysMap[day.toLowerCase()] || day)
         .join("/");
-    } else if (event.daysOfWeek) {
-      // Alternative structure
-      const daysMap = {
-        monday: "Mon",
-        tuesday: "Tue", 
-        wednesday: "Wed",
-        thursday: "Thu",
-        friday: "Fri",
-        saturday: "Sat",
-        sunday: "Sun"
-      };
-      daysStr = event.daysOfWeek
-        .map(day => daysMap[day.toLowerCase()] || day)
-        .join("/");
-    }
+     } 
+    //else if (event.daysOfWeek) {
+    //   // Alternative structure
+    //   const daysMap = {
+    //     monday: "Mon",
+    //     tuesday: "Tue", 
+    //     wednesday: "Wed",
+    //     thursday: "Thu",
+    //     friday: "Fri",
+    //     saturday: "Sat",
+    //     sunday: "Sun"
+    //   };
+    //   daysStr = event.daysOfWeek
+    //     .map(day => daysMap[day.toLowerCase()] || day)
+    //     .join("/");
+    // }
 
     if (event.recurrence?.timePeriod) {
       const start = event.recurrence.timePeriod.startOn || "";
       const end = event.recurrence.timePeriod.endOn || "";
       if (start && end) {
-        timeStr = `${start} - ${end}`;
+        // Extract time from ISO datetime string
+        const startTime = new Date(start).toLocaleTimeString('en-US', { 
+          hour: 'numeric', 
+          minute: '2-digit',
+          hour12: true 
+        });
+        const endTime = new Date(end).toLocaleTimeString('en-US', { 
+          hour: 'numeric', 
+          minute: '2-digit',
+          hour12: true 
+        });
+        timeStr = `${startTime} - ${endTime}`;
       }
-    } else if (event.startTime && event.endTime) {
-      // Alternative structure
-      timeStr = `${event.startTime} - ${event.endTime}`;
-    }
+    } 
+    // else if (event.startTime && event.endTime) {
+    //   // Alternative structure
+    //   const startTime = new Date(event.startTime).toLocaleTimeString('en-US', { 
+    //     hour: 'numeric', 
+    //     minute: '2-digit',
+    //     hour12: true 
+    //   });
+    //   const endTime = new Date(event.endTime).toLocaleTimeString('en-US', { 
+    //     hour: 'numeric', 
+    //     minute: '2-digit',
+    //     hour12: true 
+    //   });
+    //   timeStr = `${startTime} - ${endTime}`;
+    // }
 
     return { days: daysStr, time: timeStr };
   };
@@ -86,8 +108,8 @@ const ScheduleLocationInfo = ({ instructionalEvents, courseData }) => {
   const hasDynamicSchedule = scheduleData && scheduleData.days && scheduleData.time;
   const hasDynamicLocation = locationData && (locationData.building || locationData.room);
 
-  console.log("ScheduleLocationInfo - Dynamic Schedule:", scheduleData);
-  console.log("ScheduleLocationInfo - Dynamic Location:", locationData);
+  // console.log("ScheduleLocationInfo - Dynamic Schedule:", scheduleData);
+  // console.log("ScheduleLocationInfo - Dynamic Location:", locationData);
   
   // Use static data from courseData if dynamic data is not available
   const staticSchedule = courseData?.schedule || "Mon/Wed 2:00 PM - 4:15 PM";
@@ -152,7 +174,7 @@ const CoursePage = (props) => {
         
         // Debug: Check if section ID matches
         if (parsedData.section?.id && sectionId && parsedData.section.id !== sectionId) {
-          console.warn("⚠️ Section ID mismatch:", {
+          console.warn(" Section ID mismatch:", {
             fromURL: sectionId,
             fromCourseData: parsedData.section.id
           });
@@ -173,8 +195,8 @@ const CoursePage = (props) => {
       if (!isMounted) return;
       
       try {
-        console.log("=== INSTRUCTIONAL EVENTS DEBUG ===");
-        console.log("Fetching instructional events for sectionId:", sectionId);
+        // console.log("INSTRUCTIONAL EVENTS DEBUG");
+        // console.log("Fetching instructional events for sectionId:", sectionId);
 
         const queryParams = new URLSearchParams();
         queryParams.append('sectionId', sectionId);
@@ -182,7 +204,7 @@ const CoursePage = (props) => {
         queryParams.append('ethosAPIKey', "2e5330bd-483a-42c8-925b-d59edf93345f");
 
         const resource = `GetInstructionalEvents-ServerlessAPI?${queryParams.toString()}`;
-        console.log("Full resource URL:", resource);
+        // console.log("Full resource URL:", resource);
         
         const options = {
           method: 'GET',
@@ -194,8 +216,8 @@ const CoursePage = (props) => {
 
         const response = await authenticatedEthosFetch(resource, options);
         
-        console.log("Response status:", response.status);
-        console.log("Response ok:", response.ok);
+        // console.log("Response status:", response.status);
+        // console.log("Response ok:", response.ok);
         
         if (!response.ok) {
           const errorText = await response.text();
@@ -204,9 +226,9 @@ const CoursePage = (props) => {
         }
 
         const data = await response.json();
-        console.log("✓ Instructional Events API response:", data);
-        console.log("Response type:", typeof data);
-        console.log("Is array:", Array.isArray(data));
+        // console.log(" Instructional Events API response:", data);
+        // console.log("Response type:", typeof data);
+        // console.log("Is array:", Array.isArray(data));
         
         if (data.errors && data.errors.length > 0) {
           console.error("API returned errors:", data.errors);
@@ -216,27 +238,27 @@ const CoursePage = (props) => {
         let events = [];
         
         if (Array.isArray(data) && data.length > 0) {
-          console.log("Found events in direct array");
+          // console.log("Found events in direct array");
           events = data;
         } else if (data.data && Array.isArray(data.data)) {
-          console.log("Found events in data.data");
+          // console.log("Found events in data.data");
           events = data.data;
         } else if (data.payload && Array.isArray(data.payload)) {
-          console.log("Found events in data.payload");
+          // console.log("Found events in data.payload");
           events = data.payload;
         } else if (data.instructionalEvents && Array.isArray(data.instructionalEvents)) {
-          console.log("Found events in data.instructionalEvents");
+          // console.log("Found events in data.instructionalEvents");
           events = data.instructionalEvents;
         } else if (data.message && Array.isArray(data.message)) {
-          console.log("Found events in data.message");
+          // console.log("Found events in data.message");
           events = data.message;
         } else {
           console.warn("Could not find events in any known structure. Full response:", JSON.stringify(data, null, 2));
         }
         
-        console.log("Extracted instructional events count:", events.length);
+        // console.log("Extracted instructional events count:", events.length);
         if (events.length > 0) {
-          console.log("Sample event:", events[0]);
+          // console.log("Sample event:", events[0]);
         }
         
         if (isMounted) {
@@ -256,9 +278,9 @@ const CoursePage = (props) => {
       if (!isMounted) return;
 
       try {
-        console.log("=== SECTION INSTRUCTORS DEBUG ===");
-        console.log("Fetching instructors for sectionId:", sectionId);
-        console.log("cardId:", cardId);
+        // console.log(" SECTION INSTRUCTORS DEBUG ");
+        // console.log("Fetching instructors for sectionId:", sectionId);
+        // console.log("cardId:", cardId);
 
         const queryParams = new URLSearchParams();
         queryParams.append('sectionId', sectionId);
@@ -266,7 +288,7 @@ const CoursePage = (props) => {
         queryParams.append('ethosApiKey', "2e5330bd-483a-42c8-925b-d59edf93345f");
 
         const resource = `GetSectionInstructors-ServerlessAPI?${queryParams.toString()}`;
-        console.log("Full resource URL:", resource);
+        // console.log("Full resource URL:", resource);
         
         const options = {
           method: 'GET',
@@ -278,8 +300,8 @@ const CoursePage = (props) => {
 
         const response = await authenticatedEthosFetch(resource, options);
 
-        console.log("Response status:", response.status);
-        console.log("Response ok:", response.ok);
+        // console.log("Response status:", response.status);
+        // console.log("Response ok:", response.ok);
 
         if (!response.ok) {
           const errorText = await response.text();
@@ -292,14 +314,14 @@ const CoursePage = (props) => {
         }
 
         const data = await response.json();
-        console.log("✓ Section Instructors API response:", data);
-        console.log("Response structure:", {
-          isArray: Array.isArray(data),
-          hasData: !!data.data,
-          hasPayload: !!data.payload,
-          hasMessage: !!data.message,
-          keys: Object.keys(data)
-        });
+        // console.log(" Section Instructors API response:", data);
+        // console.log("Response structure:", {
+        //   isArray: Array.isArray(data),
+        //   hasData: !!data.data,
+        //   hasPayload: !!data.payload,
+        //   hasMessage: !!data.message,
+        //   keys: Object.keys(data)
+        // });
         
         if (data.errors && data.errors.length > 0) {
           console.error("API returned errors:", data.errors);
@@ -310,28 +332,28 @@ const CoursePage = (props) => {
         
         // Handle different response structures - same as instructional events
         if (Array.isArray(data)) {
-          console.log("Found instructors in direct array");
+          // console.log("Found instructors in direct array");
           instructorData = data;
         } else if (data.data && Array.isArray(data.data)) {
-          console.log("Found instructors in data.data");
+          // console.log("Found instructors in data.data");
           instructorData = data.data;
         } else if (data.payload && Array.isArray(data.payload)) {
-          console.log("Found instructors in data.payload");
+          // console.log("Found instructors in data.payload");
           instructorData = data.payload;
         } else if (data.message && Array.isArray(data.message)) {
-          console.log("Found instructors in data.message");
+          // console.log("Found instructors in data.message");
           instructorData = data.message;
         } else if (data.instructors && Array.isArray(data.instructors)) {
-          console.log("Found instructors in data.instructors");
+          // console.log("Found instructors in data.instructors");
           instructorData = data.instructors;
         } else {
           console.warn("Could not find instructors in any known structure. Full response:", JSON.stringify(data, null, 2));
         }
 
-        console.log("Extracted instructor data count:", instructorData.length);
-        if (instructorData.length > 0) {
-          console.log("Sample instructor:", instructorData[0]);
-        }
+        // console.log("Extracted instructor data count:", instructorData.length);
+        // if (instructorData.length > 0) {
+        //   console.log("Sample instructor:", instructorData[0]);
+        // }
 
         if (instructorData.length === 0) {
           if (isMounted) {
@@ -354,8 +376,8 @@ const CoursePage = (props) => {
           },
         }));
 
-        console.log("Mapped instructors count:", mappedInstructors.length);
-        console.log("Sample mapped instructor:", mappedInstructors[0]);
+        // console.log("Mapped instructors count:", mappedInstructors.length);
+        // console.log("Sample mapped instructor:", mappedInstructors[0]);
 
         const instructorsWithDetails = await Promise.all(
           mappedInstructors.map(async (instructor) => {
@@ -367,7 +389,7 @@ const CoursePage = (props) => {
                 return instructor;
               }
               
-              console.log("Fetching person details for:", personId);
+              // console.log("Fetching person details for:", personId);
               
               const personQueryParams = new URLSearchParams();
               personQueryParams.append('personId', personId);
@@ -375,7 +397,7 @@ const CoursePage = (props) => {
               personQueryParams.append('ethosApiKey', "2e5330bd-483a-42c8-925b-d59edf93345f");
               
               const personResource = `GetPersonDetails-ServerlessAPI?${personQueryParams.toString()}`;
-              console.log("Person details resource URL:", personResource);
+              // console.log("Person details resource URL:", personResource);
               
               const personResponse = await authenticatedEthosFetch(personResource, {
                 method: 'GET',
@@ -385,7 +407,7 @@ const CoursePage = (props) => {
                 },
               });
               
-              console.log("Person API response status:", personResponse.status);
+              // console.log("Person API response status:", personResponse.status);
               
               if (!personResponse.ok) {
                 const errorText = await personResponse.text();
@@ -395,7 +417,7 @@ const CoursePage = (props) => {
               }
               
               const personData = await personResponse.json();
-              console.log("Person API response for", personId, ":", personData);
+              // console.log("Person API response for", personId, ":", personData);
               
               let person = null;
               
@@ -417,7 +439,7 @@ const CoursePage = (props) => {
               }
               
               if (person && person.id) {
-                console.log("✓ Person details fetched successfully for:", personId);
+                // console.log(" Person details fetched successfully for:", personId);
                 return {
                   ...instructor,
                   node: {
@@ -447,12 +469,12 @@ const CoursePage = (props) => {
         );
         
         if (isMounted) {
-          console.log("✓ All instructor details fetched. Total count:", instructorsWithDetails.length);
+          console.log(" All instructor details fetched. Total count:", instructorsWithDetails.length);
           setInstructors(instructorsWithDetails);
         }
 
       } catch (err) {
-        console.error("=== INSTRUCTOR FETCH ERROR ===");
+        console.error(" INSTRUCTOR FETCH ERROR ");
         console.error("Error message:", err.message);
         console.error("Full error:", err);
         console.error("Stack trace:", err.stack);
@@ -564,41 +586,6 @@ const CoursePage = (props) => {
             </div>
           )}
 
-          {/* Display Section Information
-          {courseData.section && (
-            <div style={{ marginTop: "1rem", paddingTop: "1rem" }}>
-              <h4>Section Details</h4>
-              {courseData.section.id && (
-                <p>
-                  <strong>Section ID:</strong> {courseData.section.id}
-                </p>
-              )}
-              {courseData.section.titles && courseData.section.titles.length > 0 && (
-                <div>
-                  <strong>Section Titles:</strong>
-                  <ul style={{ marginTop: "0.5rem", paddingLeft: "1.5rem" }}>
-                    {courseData.section.titles.map((titleObj, idx) => (
-                      <li key={idx}>{titleObj.value || "N/A"}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          )} */}
-
-          {/* Display Academic Period Information */}
-          {/* {courseData.academicPeriod && (
-            <div style={{ marginTop: "1rem", paddingTop: "1rem", marginBottom: "1rem", borderBottom: "1px solid #ddd" }}>
-              {courseData.academicPeriod.startOn && courseData.academicPeriod.endOn && (
-                <p>
-                  <strong>Period Duration:</strong>{" "}
-                  {formatDate(courseData.academicPeriod.startOn)} -{" "}
-                  {formatDate(courseData.academicPeriod.endOn)}
-                </p>
-              )}
-            </div>
-          )} */}
-
           {/* Instructor Information */}
           <div style={{ marginBottom: "2rem" }}>
             {instructors.length > 0 ? (
@@ -672,28 +659,16 @@ const CoursePage = (props) => {
             >
               ← Back to Classes
             </button>
-
-
-
-
-
           </div>
-
-
-          
         </div>
 
         {/* RIGHT COLUMN - Campus Map */}
-
-
-         <div style={{
+        <div style={{
           flex: "0 0 60%",
           height: "400px",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          // background: "#fff",
-          
           overflow: "hidden"
         }}>
           <img
@@ -706,7 +681,6 @@ const CoursePage = (props) => {
             }}
           />
         </div>
-       
       </div>
     </div>
   );
