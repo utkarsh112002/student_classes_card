@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { usePageControl, useData } from "@ellucian/experience-extension-utils";
 import { useLocation, useHistory } from "react-router-dom";
-import campusImage from "../assets/image.png";
+import campusImage from "../assets/image.jpg";
 
 // Component to handle both dynamic and static rendering of schedule and location
 const ScheduleLocationInfo = ({ instructionalEvents, courseData }) => {
@@ -542,7 +542,7 @@ const CoursePage = (props) => {
         margin: "0 auto"
       }}>
         {/* LEFT COLUMN - Course Information */}
-        <div style={{ flex: "0 0 40%", backgroundColor: "white", padding: "2rem", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
+        <div style={{ flex: "0 0 40%", padding: "2rem" }}>
           
           {/* Course Title and Schedule */}
           {courseData && (
@@ -692,9 +692,8 @@ const CoursePage = (props) => {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          background: "#fff",
-          borderRadius: "8px",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+          // background: "#fff",
+          
           overflow: "hidden"
         }}>
           <img
