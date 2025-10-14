@@ -85,9 +85,6 @@ const ScheduleLocationInfo = ({ instructionalEvents, courseData }) => {
   // Check if we have dynamic data
   const hasDynamicSchedule = scheduleData && scheduleData.days && scheduleData.time;
   const hasDynamicLocation = locationData && (locationData.building || locationData.room);
-
-  console.log("ScheduleLocationInfo - Dynamic Schedule:", scheduleData);
-  console.log("ScheduleLocationInfo - Dynamic Location:", locationData);
   
   // Use static data from courseData if dynamic data is not available
   const staticSchedule = courseData?.schedule || "Mon/Wed 2:00 PM - 4:15 PM";
@@ -537,7 +534,7 @@ const CoursePage = (props) => {
     }}>
       <div style={{ 
         display: "flex", 
-        gap: "1rem",
+        gap: "2rem",
         maxWidth: "1400px",
         margin: "0 auto"
       }}>
@@ -620,8 +617,8 @@ const CoursePage = (props) => {
               })
             ) : (
               <div style={{ fontSize: "0.95rem", lineHeight: "1.8", color: "#333" }}>
-                <div><strong>Instructor:</strong> N/A</div>
-                <div><strong>Email:</strong> N/A</div>
+                <div><strong>Instructor:</strong>N/A </div>
+                <div><strong>Email:</strong>N/A</div>
                 <div><strong>Office Location:</strong> N/A</div>
                 <div><strong>Office Phone:</strong> N/A</div>
               </div>

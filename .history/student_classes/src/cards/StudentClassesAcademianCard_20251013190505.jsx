@@ -127,11 +127,9 @@ const StudentClassesCard = (props) => {
 
     // Navigate to course page with sectionId
     navigateToPage({
-      route: `Classpage`,
+      route: `Classpage}`,
     });
   };
-
-
 
   return (
     <div style={{ padding: "1rem", overflowY: "auto", margin: 0 }}>
