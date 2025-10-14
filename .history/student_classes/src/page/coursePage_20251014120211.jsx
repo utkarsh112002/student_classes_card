@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { usePageControl, useData } from "@ellucian/experience-extension-utils";
 import { useLocation, useHistory } from "react-router-dom";
-import campusImage from "../assets/image.jpg";
+import campusImage from "../assets/image.png";
 
 // Component to handle both dynamic and static rendering of schedule and location
 const ScheduleLocationInfo = ({ instructionalEvents, courseData }) => {
