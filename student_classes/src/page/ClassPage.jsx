@@ -328,7 +328,7 @@ const ClassesPage = () => {
             };
 
             localStorage.setItem("selectedCourse", JSON.stringify(courseData));
-            localStorage.setItem("selectedTerm", selectedTerm);
+            localStorage.setItem("selectedTerm", JSON.stringify(selectedTerm));
 
             console.log("navigation started");
 
