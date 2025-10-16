@@ -11,7 +11,7 @@ import { SelectionMenu, TextLink } from "@ellucian/react-design-system/core";
 import { useLocation, useHistory } from "react-router-dom";
  
 const ClassesPage = () => {
-
+  
   const defaultTermId = null;
 
   const { getEthosQuery } = useData();

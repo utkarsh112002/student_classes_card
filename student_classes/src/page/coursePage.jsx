@@ -172,9 +172,16 @@ const CoursePage = (props) => {
         setCourseData(parsedData);
         setPageTitle(parsedData.courseName || "Course Details");
         
+        // Extract and log subject abbreviation and course number
+        const subjectCode = parsedData.subjectAbbreviation;
+        const courseNumber = parsedData.courseNumber;
+        
+        console.log("Subject Abbreviation:", subjectCode);
+        console.log("Course Number:", courseNumber);
+        
         // Debug: Check if section ID matches
         if (parsedData.section?.id && sectionId && parsedData.section.id !== sectionId) {
-          console.warn(" Section ID mismatch:", {
+          console.warn("Section ID mismatch:", {
             fromURL: sectionId,
             fromCourseData: parsedData.section.id
           });
