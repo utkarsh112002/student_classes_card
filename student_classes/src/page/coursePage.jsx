@@ -5,7 +5,7 @@ import { useLocation, useHistory } from "react-router-dom";
 import campusImage from "../assets/image.jpg";
 
 // Component to handle both dynamic and static rendering of schedule and location
-const ScheduleLocationInfo = ({ instructionalEvents, courseData }) => {
+const ScheduleLocationInfo = ({ instructionalEvents, courseData, campusDescription }) => {
   const formatSchedule = (events) => {
     if (!events || events.length === 0) return null;
     
@@ -28,21 +28,6 @@ const ScheduleLocationInfo = ({ instructionalEvents, courseData }) => {
         .map(day => daysMap[day.toLowerCase()] || day)
         .join("/");
      } 
-    //else if (event.daysOfWeek) {
-    //   // Alternative structure
-    //   const daysMap = {
-    //     monday: "Mon",
-    //     tuesday: "Tue", 
-    //     wednesday: "Wed",
-    //     thursday: "Thu",
-    //     friday: "Fri",
-    //     saturday: "Sat",
-    //     sunday: "Sun"
-    //   };
-    //   daysStr = event.daysOfWeek
-    //     .map(day => daysMap[day.toLowerCase()] || day)
-    //     .join("/");
-    // }
 
     if (event.recurrence?.timePeriod) {
       const start = event.recurrence.timePeriod.startOn || "";
@@ -61,21 +46,7 @@ const ScheduleLocationInfo = ({ instructionalEvents, courseData }) => {
         });
         timeStr = `${startTime} - ${endTime}`;
       }
-    } 
-    // else if (event.startTime && event.endTime) {
-    //   // Alternative structure
-    //   const startTime = new Date(event.startTime).toLocaleTimeString('en-US', { 
-    //     hour: 'numeric', 
-    //     minute: '2-digit',
-    //     hour12: true 
-    //   });
-    //   const endTime = new Date(event.endTime).toLocaleTimeString('en-US', { 
-    //     hour: 'numeric', 
-    //     minute: '2-digit',
-    //     hour12: true 
-    //   });
-    //   timeStr = `${startTime} - ${endTime}`;
-    // }
+    }
 
     return { days: daysStr, time: timeStr };
   };
@@ -107,13 +78,10 @@ const ScheduleLocationInfo = ({ instructionalEvents, courseData }) => {
   // Check if we have dynamic data
   const hasDynamicSchedule = scheduleData && scheduleData.days && scheduleData.time;
   const hasDynamicLocation = locationData && (locationData.building || locationData.room);
-
-  // console.log("ScheduleLocationInfo - Dynamic Schedule:", scheduleData);
-  // console.log("ScheduleLocationInfo - Dynamic Location:", locationData);
   
   // Use static data from courseData if dynamic data is not available
   const staticSchedule = courseData?.schedule || "Mon/Wed 2:00 PM - 4:15 PM";
-  const staticLocation = courseData?.location || "Panama City Campus";
+  const staticLocation = courseData?.location || ( `${campusDescription} Campus` );
   
   return (
     <div>
@@ -132,10 +100,10 @@ const ScheduleLocationInfo = ({ instructionalEvents, courseData }) => {
       }}>
         {hasDynamicLocation ? 
           (locationData.building && locationData.room ? 
-            `Panama City Campus, ${locationData.building} ${locationData.room}` : 
+            `${campusDescription ? `${campusDescription} Campus` : 'Panama City Campus'}, ${locationData.building} ${locationData.room}` : 
             locationData.building ? 
-              `Panama City Campus, ${locationData.building}` : 
-              "Panama City Campus"
+              `${campusDescription ? `${campusDescription} Campus` : 'Panama City Campus'}, ${locationData.building}` : 
+              (campusDescription ? `${campusDescription} Campus` : "Panama City Campus")
           ) : 
           staticLocation
         }
@@ -156,6 +124,8 @@ const CoursePage = (props) => {
   const [courseData, setCourseData] = useState(null);
   const [instructors, setInstructors] = useState([]);
   const [instructionalEvents, setInstructionalEvents] = useState([]);
+  const [campusCode, setCampusCode] = useState(null);
+  const [campusDescription, setCampusDescription] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -198,20 +168,23 @@ const CoursePage = (props) => {
   useEffect(() => {
     let isMounted = true;
 
-    const fetchInstructionalEvents = async (sectionId) => {
+    const fetchCampusCode = async (subjectCode, courseNumber, userId, termCode) => {
       if (!isMounted) return;
       
       try {
-        // console.log("INSTRUCTIONAL EVENTS DEBUG");
-        // console.log("Fetching instructional events for sectionId:", sectionId);
+        console.log("CAMPUS CODE DEBUG");
+        console.log("Fetching campus code with params:", { subjectCode, courseNumber, userId, termCode });
 
         const queryParams = new URLSearchParams();
-        queryParams.append('sectionId', sectionId);
+        queryParams.append('subjectCode', subjectCode);
+        queryParams.append('courseNumber', courseNumber);
+        queryParams.append('userId', userId);
+        queryParams.append('termCode', termCode);
         queryParams.append('cardId', cardId);
         queryParams.append('ethosAPIKey', "2e5330bd-483a-42c8-925b-d59edf93345f");
 
-        const resource = `GetInstructionalEvents-ServerlessAPI?${queryParams.toString()}`;
-        // console.log("Full resource URL:", resource);
+        const resource = `GetCampusCode-ServerlessAPI?${queryParams.toString()}`;
+        console.log("Full resource URL:", resource);
         
         const options = {
           method: 'GET',
@@ -223,8 +196,80 @@ const CoursePage = (props) => {
 
         const response = await authenticatedEthosFetch(resource, options);
         
-        // console.log("Response status:", response.status);
-        // console.log("Response ok:", response.ok);
+        console.log("Response status:", response.status);
+        console.log("Response ok:", response.ok);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("Campus Code API Error:", errorText);
+          throw new Error(`HTTP ${response.status}: ${response.statusText || errorText}`);
+        }
+
+        const data = await response.json();
+        console.log("Campus Code API response:", data);
+        
+        if (data.errors && data.errors.length > 0) {
+          console.error("API returned errors:", data.errors);
+          throw new Error(data.errors[0].description || data.errors[0].details || "API error");
+        }
+
+        let campusCodeData = null;
+        let campusDescriptionData = null;
+        
+        // Handle different response structures
+        if (typeof data === 'string') {
+          campusCodeData = data;
+        } else if (data.campuscode || data.campusCode) {
+          campusCodeData = data.campuscode || data.campusCode;
+          campusDescriptionData = data.campusdescription || data.campusDescription;
+        } else if (data.data) {
+          campusCodeData = data.data.campuscode || data.data.campusCode || data.data;
+          campusDescriptionData = data.data.campusdescription || data.data.campusDescription;
+        } else if (data.payload) {
+          campusCodeData = data.payload.campuscode || data.payload.campusCode || data.payload;
+          campusDescriptionData = data.payload.campusdescription || data.payload.campusDescription;
+        } else if (data.message) {
+          campusCodeData = data.message.campuscode || data.message.campusCode || data.message;
+          campusDescriptionData = data.message.campusdescription || data.message.campusDescription;
+        }
+        
+        console.log("Extracted campus code:", campusCodeData);
+        console.log("Extracted campus description:", campusDescriptionData);
+        
+        if (isMounted) {
+          setCampusCode(campusCodeData);
+          setCampusDescription(campusDescriptionData);
+        }
+
+      } catch (err) {
+        console.error("Failed to fetch campus code:", err.message);
+        console.error("Full error:", err);
+        if (isMounted) {
+          setCampusCode(null);
+        }
+      }
+    };
+
+    const fetchInstructionalEvents = async (sectionId) => {
+      if (!isMounted) return;
+      
+      try {
+        const queryParams = new URLSearchParams();
+        queryParams.append('sectionId', sectionId);
+        queryParams.append('cardId', cardId);
+        queryParams.append('ethosAPIKey', "2e5330bd-483a-42c8-925b-d59edf93345f");
+
+        const resource = `GetInstructionalEvents-ServerlessAPI?${queryParams.toString()}`;
+        
+        const options = {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+        };
+
+        const response = await authenticatedEthosFetch(resource, options);
         
         if (!response.ok) {
           const errorText = await response.text();
@@ -233,9 +278,6 @@ const CoursePage = (props) => {
         }
 
         const data = await response.json();
-        // console.log(" Instructional Events API response:", data);
-        // console.log("Response type:", typeof data);
-        // console.log("Is array:", Array.isArray(data));
         
         if (data.errors && data.errors.length > 0) {
           console.error("API returned errors:", data.errors);
@@ -245,27 +287,17 @@ const CoursePage = (props) => {
         let events = [];
         
         if (Array.isArray(data) && data.length > 0) {
-          // console.log("Found events in direct array");
           events = data;
         } else if (data.data && Array.isArray(data.data)) {
-          // console.log("Found events in data.data");
           events = data.data;
         } else if (data.payload && Array.isArray(data.payload)) {
-          // console.log("Found events in data.payload");
           events = data.payload;
         } else if (data.instructionalEvents && Array.isArray(data.instructionalEvents)) {
-          // console.log("Found events in data.instructionalEvents");
           events = data.instructionalEvents;
         } else if (data.message && Array.isArray(data.message)) {
-          // console.log("Found events in data.message");
           events = data.message;
         } else {
           console.warn("Could not find events in any known structure. Full response:", JSON.stringify(data, null, 2));
-        }
-        
-        // console.log("Extracted instructional events count:", events.length);
-        if (events.length > 0) {
-          // console.log("Sample event:", events[0]);
         }
         
         if (isMounted) {
@@ -285,17 +317,12 @@ const CoursePage = (props) => {
       if (!isMounted) return;
 
       try {
-        // console.log(" SECTION INSTRUCTORS DEBUG ");
-        // console.log("Fetching instructors for sectionId:", sectionId);
-        // console.log("cardId:", cardId);
-
         const queryParams = new URLSearchParams();
         queryParams.append('sectionId', sectionId);
         queryParams.append('cardId', cardId);
         queryParams.append('ethosApiKey', "2e5330bd-483a-42c8-925b-d59edf93345f");
 
         const resource = `GetSectionInstructors-ServerlessAPI?${queryParams.toString()}`;
-        // console.log("Full resource URL:", resource);
         
         const options = {
           method: 'GET',
@@ -307,28 +334,16 @@ const CoursePage = (props) => {
 
         const response = await authenticatedEthosFetch(resource, options);
 
-        // console.log("Response status:", response.status);
-        // console.log("Response ok:", response.ok);
-
         if (!response.ok) {
           const errorText = await response.text();
           console.error("Section Instructors API Error:", errorText);
           console.error("Response status:", response.status);
           console.error("Response statusText:", response.statusText);
           
-          // More detailed error message
           throw new Error(`Failed to fetch instructors: HTTP ${response.status} - ${errorText || response.statusText}`);
         }
 
         const data = await response.json();
-        // console.log(" Section Instructors API response:", data);
-        // console.log("Response structure:", {
-        //   isArray: Array.isArray(data),
-        //   hasData: !!data.data,
-        //   hasPayload: !!data.payload,
-        //   hasMessage: !!data.message,
-        //   keys: Object.keys(data)
-        // });
         
         if (data.errors && data.errors.length > 0) {
           console.error("API returned errors:", data.errors);
@@ -337,30 +352,19 @@ const CoursePage = (props) => {
 
         let instructorData = [];
         
-        // Handle different response structures - same as instructional events
         if (Array.isArray(data)) {
-          // console.log("Found instructors in direct array");
           instructorData = data;
         } else if (data.data && Array.isArray(data.data)) {
-          // console.log("Found instructors in data.data");
           instructorData = data.data;
         } else if (data.payload && Array.isArray(data.payload)) {
-          // console.log("Found instructors in data.payload");
           instructorData = data.payload;
         } else if (data.message && Array.isArray(data.message)) {
-          // console.log("Found instructors in data.message");
           instructorData = data.message;
         } else if (data.instructors && Array.isArray(data.instructors)) {
-          // console.log("Found instructors in data.instructors");
           instructorData = data.instructors;
         } else {
           console.warn("Could not find instructors in any known structure. Full response:", JSON.stringify(data, null, 2));
         }
-
-        // console.log("Extracted instructor data count:", instructorData.length);
-        // if (instructorData.length > 0) {
-        //   console.log("Sample instructor:", instructorData[0]);
-        // }
 
         if (instructorData.length === 0) {
           if (isMounted) {
@@ -383,9 +387,6 @@ const CoursePage = (props) => {
           },
         }));
 
-        // console.log("Mapped instructors count:", mappedInstructors.length);
-        // console.log("Sample mapped instructor:", mappedInstructors[0]);
-
         const instructorsWithDetails = await Promise.all(
           mappedInstructors.map(async (instructor) => {
             try {
@@ -396,15 +397,12 @@ const CoursePage = (props) => {
                 return instructor;
               }
               
-              // console.log("Fetching person details for:", personId);
-              
               const personQueryParams = new URLSearchParams();
               personQueryParams.append('personId', personId);
               personQueryParams.append('cardId', cardId);
               personQueryParams.append('ethosApiKey', "2e5330bd-483a-42c8-925b-d59edf93345f");
               
               const personResource = `GetPersonDetails-ServerlessAPI?${personQueryParams.toString()}`;
-              // console.log("Person details resource URL:", personResource);
               
               const personResponse = await authenticatedEthosFetch(personResource, {
                 method: 'GET',
@@ -414,8 +412,6 @@ const CoursePage = (props) => {
                 },
               });
               
-              // console.log("Person API response status:", personResponse.status);
-              
               if (!personResponse.ok) {
                 const errorText = await personResponse.text();
                 console.error("Person Details API Error:", errorText);
@@ -424,11 +420,9 @@ const CoursePage = (props) => {
               }
               
               const personData = await personResponse.json();
-              // console.log("Person API response for", personId, ":", personData);
               
               let person = null;
               
-              // Handle different response structures - consistent with other APIs
               if (personData.id) {
                 person = personData;
               } else if (personData.data && personData.data.id) {
@@ -446,7 +440,6 @@ const CoursePage = (props) => {
               }
               
               if (person && person.id) {
-                // console.log(" Person details fetched successfully for:", personId);
                 return {
                   ...instructor,
                   node: {
@@ -476,12 +469,12 @@ const CoursePage = (props) => {
         );
         
         if (isMounted) {
-          console.log(" All instructor details fetched. Total count:", instructorsWithDetails.length);
+          console.log("All instructor details fetched. Total count:", instructorsWithDetails.length);
           setInstructors(instructorsWithDetails);
         }
 
       } catch (err) {
-        console.error(" INSTRUCTOR FETCH ERROR ");
+        console.error("INSTRUCTOR FETCH ERROR");
         console.error("Error message:", err.message);
         console.error("Full error:", err);
         console.error("Stack trace:", err.stack);
@@ -499,6 +492,32 @@ const CoursePage = (props) => {
     if (sectionId) {
       fetchInstructorsFromServerless(sectionId);
       fetchInstructionalEvents(sectionId);
+      
+      // Fetch campus code if we have the required data
+      if (courseData?.subjectAbbreviation && courseData?.courseNumber) {
+        // Get userId - replace with actual userId retrieval method
+        const userId = "EMCQUE";
+        
+        // Get term code from localStorage
+        const storedTerm = localStorage.getItem("selectedTerm");
+        if (storedTerm) {
+          try {
+            const termData = JSON.parse(storedTerm);
+            const termCode = termData.code;
+            
+            if (termCode) {
+              fetchCampusCode(
+                courseData.subjectAbbreviation,
+                courseData.courseNumber,
+                userId,
+                termCode
+              );
+            }
+          } catch (err) {
+            console.error("Error parsing selectedTerm from localStorage:", err);
+          }
+        }
+      }
     } else {
       setError("No section ID provided");
       setLoading(false);
@@ -507,7 +526,7 @@ const CoursePage = (props) => {
     return () => {
       isMounted = false;
     };
-  }, [authenticatedEthosFetch, sectionId, cardId]);
+  }, [authenticatedEthosFetch, sectionId, cardId, courseData]);
 
   const formatDate = (dateString) => {
     if (!dateString) return "";
@@ -589,6 +608,7 @@ const CoursePage = (props) => {
               <ScheduleLocationInfo 
                 instructionalEvents={instructionalEvents} 
                 courseData={courseData}
+                campusDescription={campusDescription}
               />
             </div>
           )}
@@ -624,9 +644,16 @@ const CoursePage = (props) => {
 
           {/* Start and End Dates */}
           {courseData && (
-            <div style={{ fontSize: "0.95rem", lineHeight: "1.8", color: "#333" }}>
+            <div style={{ fontSize: "0.95rem", lineHeight: "1.8", color: "#333", marginBottom: "1rem" }}>
               <div><strong>Start Date:</strong> {formatDate(courseData.startOn || courseData.academicPeriod?.startOn)}</div>
               <div><strong>End Date:</strong> {formatDate(courseData.endOn || courseData.academicPeriod?.endOn)}</div>
+            </div>
+          )}
+
+          {/* Campus Code */}
+          {campusCode && (
+            <div style={{ fontSize: "0.95rem", lineHeight: "1.8", color: "#333" }}>
+              {/* <div><strong>Campus Code:</strong> {campusCode}</div> */}
             </div>
           )}
 
